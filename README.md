@@ -1,0 +1,3 @@
+-   Chạy code selenium để session_token vô file klok.txt 
+-   Điền proxy vào file proxy.txt theo định dạng: `http://user:pass@ip:port`
+-   Chạy lệnh `node klok-proxy.js` là xong, mỗi ngày chạy 1 lần
