@@ -108,11 +108,14 @@ function getRandomInterval() {
   return Math.floor(Math.random() * (CONFIG.MAX_INTERVAL - CONFIG.MIN_INTERVAL + 1)) + CONFIG.MIN_INTERVAL;
 }
 
-function readTokens() {
+function readTokens(
+  start, end
+) {
   try {
     const data = fs.readFileSync(CONFIG.TOKEN_FILE, 'utf8');
     const tokens = data
       .split('\n')
+      .slice(start, end)
       .map(token => token.replace(/[\r\n]/g, '').trim())
       .filter(token => token !== '');
     
@@ -129,10 +132,14 @@ function readTokens() {
   }
 }
 
-function readProxies() {
+function readProxies(
+  start, end
+) {
   try {
     const data = fs.readFileSync(CONFIG.PROXY_FILE, 'utf8');
-    const proxies = data.split('\n').filter(proxy => proxy.trim() !== '');
+    const proxies = data.split('\n')
+      .splice(start, end)
+      .filter(proxy => proxy.trim() !== '');
     
     if (proxies.length === 0) {
       log('Bạn chưa ném proxy vào proxy.txt', 'error');
@@ -363,10 +370,17 @@ async function handleAccount(token, proxy, accountIndex) {
   };
 }
 
-async function runBot() {
-  log('Dân Cày Airdrop...', 'custom');
-  const tokens = readTokens();
-  const proxies = readProxies();
+async function runBot(
+  start = 0,
+  end = undefined
+) {
+  log('NEZUKO TEAM - KLOK.AI BOT', 'custom');
+  const tokens = readTokens(
+    start, end
+  );
+  const proxies = readProxies(
+    start, end
+  );
   
   if (tokens.length !== proxies.length) {
     log(`Số lượng token (${tokens.length}) và proxy (${proxies.length}) không khớp nhau. Vui lòng kiểm tra lại.`, 'error');
@@ -515,7 +529,21 @@ async function runBot() {
   processAccounts();
 }
 
-runBot().catch(error => {
+const startIndex = process.argv.indexOf('--start');
+let startValue;
+if (startIndex > -1) {
+    startValue = process.argv[startIndex + 1];
+}
+const endIndex = process.argv.indexOf('--end');
+let endValue;
+if (endIndex > -1) {
+    endValue = process.argv[endIndex + 1];
+}
+
+runBot(
+  startValue ? parseInt(startValue) : 0,
+  endValue ? parseInt(endValue) : undefined
+).catch(error => {
   log(`Bot crashed: ${error}`, 'error');
   process.exit(1);
 });

@@ -7,7 +7,7 @@ const readline = require('readline');
 
 const CONFIG = {
   API_BASE_URL: 'https://api1-pp.klokapp.ai/v1',
-  TOKEN_FILE: 'data.txt',
+  TOKEN_FILE: 'klok.txt',
   MIN_INTERVAL: 10000,
   MAX_INTERVAL: 30000,
   MAX_FAILED_ATTEMPTS: 3,
@@ -106,23 +106,26 @@ function getRandomInterval() {
   return Math.floor(Math.random() * (CONFIG.MAX_INTERVAL - CONFIG.MIN_INTERVAL + 1)) + CONFIG.MIN_INTERVAL;
 }
 
-function readTokens() {
+function readTokens(
+  start, end
+) {
   try {
     const data = fs.readFileSync(CONFIG.TOKEN_FILE, 'utf8');
     const tokens = data
       .split('\n')
+      .slice(start, end)
       .map(token => token.replace(/[\r\n]/g, '').trim())
       .filter(token => token !== '');
     
     if (tokens.length === 0) {
-      log('Bạn chưa ném token vào data.txt', 'error');
+      log('Bạn chưa ném token vào klok.txt', 'error');
       process.exit(1);
     }
     
-    log(`Đã đọc ${tokens.length} token từ data.txt`, 'success');
+    log(`Đã đọc ${tokens.length} token từ klok.txt`, 'success');
     return tokens;
   } catch (error) {
-    log(`Không thể đọc file data.txt: ${error}`, 'error');
+    log(`Không thể đọc file klok.txt: ${error}`, 'error');
     process.exit(1);
   }
 }
@@ -310,9 +313,14 @@ async function handleAccount(token, accountIndex) {
   };
 }
 
-async function runBot() {
-  log('Dân Cày Airdrop...', 'custom');
-  const tokens = readTokens();
+async function runBot(
+  start = 0,
+  end = undefined
+) {
+  log('NEZUKO TEAM - KLOK.AI BOT', 'info');
+  const tokens = readTokens(
+    start, end
+  );
   
   const accounts = [];
 
@@ -448,7 +456,21 @@ async function runBot() {
   processAccounts();
 }
 
-runBot().catch(error => {
+const startIndex = process.argv.indexOf('--start');
+let startValue;
+if (startIndex > -1) {
+    startValue = process.argv[startIndex + 1];
+}
+const endIndex = process.argv.indexOf('--end');
+let endValue;
+if (endIndex > -1) {
+    endValue = process.argv[endIndex + 1];
+}
+
+runBot(
+  startValue ? parseInt(startValue) : 0,
+  endValue ? parseInt(endValue) : undefined
+).catch(error => {
   log(`Bot crashed: ${error}`, 'error');
   process.exit(1);
 });
